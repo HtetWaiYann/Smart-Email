@@ -15,6 +15,7 @@ const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
+      console.log("signIn", user, account);
       if (account?.provider === "google") {
         try {
           if (!user.email) {
