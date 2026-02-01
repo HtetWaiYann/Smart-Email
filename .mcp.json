@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "smart-email": {
-      "command": "npx",
-      "args": ["-y", "tsx", "scripts/smart-email-mcp.ts"]
-    }
-  }
-}

@@ -6,11 +6,9 @@
     "dev": "next dev -p 443 --experimental-https -H www.smartemail.com",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "mcp:serve": "tsx scripts/smart-email-mcp.ts"
+    "lint": "eslint"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.3",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "googleapis": "^170.1.0",
