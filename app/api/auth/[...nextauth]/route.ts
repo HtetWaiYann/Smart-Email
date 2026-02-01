@@ -8,6 +8,11 @@ const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      authorization: {
+        params: {
+          scope: "openid email profile https://mail.google.com/",
+        },
+      },
     }),
   ],
   session: {
@@ -15,7 +20,6 @@ const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
-      console.log("signIn", user, account);
       if (account?.provider === "google") {
         try {
           if (!user.email) {
