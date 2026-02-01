@@ -35,7 +35,7 @@ Smart Email is an intelligent email management system that integrates with Gmail
 
 Before you begin, ensure you have the following installed:
 
-- Node.js 18+ and npm/yarn/pnpm
+- Node.js 20+ and npm/yarn/pnpm
 - PostgreSQL database
 - Google Cloud Project with Gmail API enabled
 - Google OAuth2 credentials
