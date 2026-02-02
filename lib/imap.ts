@@ -17,9 +17,6 @@ export interface FetchedEmail {
   receivedAt: string;
 }
 
-/**
- * Refreshes Google OAuth access token if expired and returns valid access token.
- */
 async function getValidAccessToken(
   oauthAccount: { accessToken: string; refreshToken: string; expiresAt: Date; id: string }
 ): Promise<string> {
@@ -46,8 +43,7 @@ async function getValidAccessToken(
 }
 
 /**
- * Fetches inbox emails via Gmail IMAP with XOAUTH2 (no Gmail API).
- * Uses the same OAuth tokens from NextAuth; requires scope https://mail.google.com/
+ * Fetches inbox emails via Gmail IMAP with XOAUTH2.
  */
 export async function fetchInboxViaImap(
   userEmail: string,
@@ -59,10 +55,7 @@ export async function fetchInboxViaImap(
     host: GMAIL_IMAP_HOST,
     port: GMAIL_IMAP_PORT,
     secure: true,
-    auth: {
-      user: userEmail,
-      accessToken,
-    },
+    auth: { user: userEmail, accessToken },
     logger: false,
   });
 
@@ -70,18 +63,14 @@ export async function fetchInboxViaImap(
 
   try {
     await client.connect();
-
     const lock = await client.getMailboxLock("INBOX");
     try {
-      const total = client.mailbox.exists;
-      if (total === 0) {
-        return [];
-      }
+      const m = client.mailbox;
+      const total = m && typeof m === "object" && "exists" in m ? (m as { exists: number }).exists : 0;
+      if (total === 0) return [];
 
       const start = Math.max(1, total - MAX_EMAILS + 1);
-      const range = `${start}:${total}`;
-
-      const messages = await client.fetchAll(range, {
+      const messages = await client.fetchAll(`${start}:${total}`, {
         envelope: true,
         source: true,
         uid: true,

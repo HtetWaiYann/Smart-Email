@@ -5,9 +5,9 @@ import { runTool } from "@/lib/mcp/run-tool";
 const MCP_SECRET = process.env.MCP_SECRET;
 
 /**
- * POST /api/mcp/call — app-callable MCP endpoint.
- * Body: { tool: string, input: unknown }
- * Optional: Authorization: Bearer MCP_SECRET (see docs/mcp-setup.md)
+ * POST /api/mcp/call — run MCP tool (categorize_email).
+ * Body: { tool: "categorize_email", input: { from, subject, snippet } }
+ * Optional: Authorization: Bearer MCP_SECRET
  */
 export async function POST(request: Request) {
   if (MCP_SECRET) {

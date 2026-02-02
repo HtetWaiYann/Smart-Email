@@ -1,20 +1,17 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { fetchGmailEmails } from "@/lib/actions/gmail";
+import { fetchInboxEmails } from "@/lib/actions/emails";
 import SignOutButton from "@/components/SignOutButton";
-import McpTestButton from "@/components/McpTestButton";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
 
-  // Redirect to signin if not authenticated
   if (!session || !session.user?.email) {
     redirect("/signin");
   }
 
-  // Fetch emails from Gmail API using server action
-  const { emails, error } = await fetchGmailEmails();
+  const { emails, error } = await fetchInboxEmails();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -28,10 +25,7 @@ export default async function Home() {
               Here are your latest {emails.length} emails
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <McpTestButton />
-            <SignOutButton />
-          </div>
+          <SignOutButton />
         </div>
 
         {error && (
@@ -53,7 +47,7 @@ export default async function Home() {
           <div className="space-y-4">
             {emails.map((email) => (
               <div
-                key={email.id || email.gmailId}
+                key={email.id ?? email.gmailId}
                 className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between">
@@ -63,7 +57,7 @@ export default async function Home() {
                     </h3>
                     <p className="text-sm text-gray-600 mb-2">From: {email.from}</p>
                     <p className="text-gray-700 mb-3 line-clamp-2">
-                      {email.snippet || email.body?.substring(0, 200) || "No preview available"}
+                      {email.snippet || "No preview available"}
                     </p>
                     <p className="text-xs text-gray-400 mt-3">
                       {new Date(email.receivedAt).toLocaleString()}

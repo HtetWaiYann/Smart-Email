@@ -11,6 +11,8 @@ const authOptions: NextAuthOptions = {
       authorization: {
         params: {
           scope: "openid email profile https://mail.google.com/",
+          access_type: "offline",
+          prompt: "consent",
         },
       },
     }),

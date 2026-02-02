@@ -1,42 +1,41 @@
 "use server";
 
-import { callMCP } from "@/lib/mcpClient";
+import { runTool } from "@/lib/mcp/run-tool";
 import type { ClassifyEmailOutput } from "@/lib/mcp/schemas";
 
-export type ClassifyEmailActionInput = {
+export type CategorizeEmailInput = {
   from: string;
   subject: string;
   snippet: string;
 };
 
 /**
- * Calls the MCP classify_email tool. Runs only on server.
- * Returns structured result or error; frontend never sees MCP or AI directly.
+ * Calls the categorize_email tool. Use after fetching the email list.
  */
-export async function classifyEmailAction(
-  email: ClassifyEmailActionInput
+export async function categorizeEmail(
+  input: CategorizeEmailInput
 ): Promise<
   | { ok: true; result: ClassifyEmailOutput }
   | { ok: false; error: string }
 > {
-  const response = await callMCP("classify_email", {
-    from: email.from,
-    subject: email.subject,
-    snippet: email.snippet,
+  const result = await runTool("categorize_email", {
+    from: input.from,
+    subject: input.subject,
+    snippet: input.snippet,
   });
 
-  if (!response.ok) {
-    return { ok: false, error: response.error };
+  if (!result.ok) {
+    return { ok: false, error: result.error };
   }
 
-  const result = response.data as ClassifyEmailOutput;
+  const data = result.data as ClassifyEmailOutput;
   return {
     ok: true,
     result: {
-      category: result.category,
-      urgency: result.urgency,
-      summary: result.summary,
-      suggested_reply: result.suggested_reply,
+      category: data.category,
+      urgency: data.urgency,
+      summary: data.summary,
+      suggested_reply: data.suggested_reply,
     },
   };
 }

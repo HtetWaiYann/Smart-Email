@@ -9,36 +9,21 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const dbUser = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        accounts: {
-          where: { provider: "google" },
-        },
-      },
+      include: { accounts: { where: { provider: "google" } } },
     });
 
     if (!dbUser || !dbUser.accounts.length) {
-      return NextResponse.json(
-        { error: "No OAuth account found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "No OAuth account found" }, { status: 404 });
     }
 
-    const oauthAccount = dbUser.accounts[0];
-    const emails = await fetchInboxViaImap(session.user.email, oauthAccount);
-
+    const emails = await fetchInboxViaImap(session.user.email, dbUser.accounts[0]);
     return NextResponse.json({ emails });
   } catch {
-    return NextResponse.json(
-      { error: "Failed to fetch emails" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch emails" }, { status: 500 });
   }
 }
