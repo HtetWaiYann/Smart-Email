@@ -23,7 +23,7 @@ export async function categorizeEmail(
     subject: input.subject,
     snippet: input.snippet,
   });
-
+ 
   if (!result.ok) {
     return { ok: false, error: result.error };
   }
