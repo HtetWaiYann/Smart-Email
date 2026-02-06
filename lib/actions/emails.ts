@@ -111,12 +111,12 @@ export async function processAndStoreEmails() {
   }
 }
 
-export async function getUserEmails() {
+export async function getUserEmails(page: number = 1, limit: number = 10) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user?.email) {
-      return { error: "Unauthorized", emails: [] };
+      return { error: "Unauthorized", emails: [], total: 0 };
     }
 
     const dbUser = await prisma.user.findUnique({
@@ -124,17 +124,25 @@ export async function getUserEmails() {
     });
 
     if (!dbUser) {
-      return { error: "User not found", emails: [] };
+      return { error: "User not found", emails: [], total: 0 };
     }
 
-    const emails = await prisma.email.findMany({
-      where: { userId: dbUser.id, archivedAt: null },
-      orderBy: { receivedAt: "desc" },
-      take: 10,
-    });
+    const skip = (page - 1) * limit;
 
-    return { emails, error: null };
+    const [emails, total] = await Promise.all([
+      prisma.email.findMany({
+        where: { userId: dbUser.id, archivedAt: null },
+        orderBy: { receivedAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.email.count({
+        where: { userId: dbUser.id, archivedAt: null },
+      }),
+    ]);
+
+    return { emails, error: null, total };
   } catch {
-    return { error: "Failed to fetch emails", emails: [] };
+    return { error: "Failed to fetch emails", emails: [], total: 0 };
   }
 }
