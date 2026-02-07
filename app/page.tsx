@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { processAndStoreEmails, getUserEmails } from "@/lib/actions/emails";
+import { getUserEmails } from "@/lib/actions/emails";
 import SignOutButton from "@/components/SignOutButton";
 import Pagination from "@/components/Pagination";
 
@@ -15,8 +15,6 @@ export default async function Home({
   if (!session || !session.user?.email) {
     redirect("/signin");
   }
-
-  await processAndStoreEmails();
 
   const params = await searchParams;
   const page = Number(params.page) || 1;

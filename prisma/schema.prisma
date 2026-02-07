@@ -42,7 +42,6 @@ model Email {
   // Basic metadata
   from       String
   subject    String
-  snippet    String
   receivedAt DateTime
 
   // AI-generated fields (via MCP)

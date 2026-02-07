@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 
 const GMAIL_IMAP_HOST = "imap.gmail.com";
 const GMAIL_IMAP_PORT = 993;
-const MAX_EMAILS = 10;
 
 export interface FetchedEmail {
   id: string;
@@ -47,8 +46,12 @@ async function getValidAccessToken(
  */
 export async function fetchInboxViaImap(
   userEmail: string,
-  oauthAccount: { accessToken: string; refreshToken: string; expiresAt: Date; id: string }
-): Promise<FetchedEmail[]> {
+  oauthAccount: { accessToken: string; refreshToken: string; expiresAt: Date; id: string },
+  options?: { page?: number; limit?: number }
+): Promise<{ emails: FetchedEmail[]; total: number }> {
+  const page = options?.page || 1;
+  const limit = options?.limit || 10;
+  
   const accessToken = await getValidAccessToken(oauthAccount);
 
   const client = new ImapFlow({
@@ -60,17 +63,22 @@ export async function fetchInboxViaImap(
   });
 
   const emails: FetchedEmail[] = [];
+  let total = 0;
 
   try {
     await client.connect();
     const lock = await client.getMailboxLock("INBOX");
     try {
       const m = client.mailbox;
-      const total = m && typeof m === "object" && "exists" in m ? (m as { exists: number }).exists : 0;
-      if (total === 0) return [];
+      total = m && typeof m === "object" && "exists" in m ? (m as { exists: number }).exists : 0;
+      if (total === 0) return { emails: [], total: 0 };
 
-      const start = Math.max(1, total - MAX_EMAILS + 1);
-      const messages = await client.fetchAll(`${start}:${total}`, {
+      const endIndex = total - (page - 1) * limit;
+      const startIndex = Math.max(1, endIndex - limit + 1);
+
+      if (endIndex < 1) return { emails: [], total };
+
+      const messages = await client.fetchAll(`${startIndex}:${endIndex}`, {
         envelope: true,
         source: true,
         uid: true,
@@ -127,5 +135,5 @@ export async function fetchInboxViaImap(
     await client.logout();
   }
 
-  return emails.reverse();
+  return { emails: emails.reverse(), total };
 }
